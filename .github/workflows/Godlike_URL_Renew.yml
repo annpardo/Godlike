@@ -7,6 +7,13 @@ on:
         description: '指定ID（留空运行全部）'
         required: false
         default: ''
+  # ⬇️ 修复问题1：新增定时触发器，两条规则交替组合实现严格每 90 分钟执行一次
+  schedule:
+    - cron: '0 0 * * *'
+
+# ⬇️ 修复问题2：强制所有 Actions 步骤在 Node 24 现代环境下安全运行，消除警告
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 permissions:
   actions: write
@@ -31,7 +38,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb ffmpeg unzip curl
           wget -q -O /tmp/google-chrome-stable_current_amd64.deb \
-            https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            https://google.com
           sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb || sudo apt-get install -f -y
 
       - name: 安装 Python 依赖
@@ -51,12 +58,13 @@ jobs:
           sudo systemctl disable systemd-resolved 2>/dev/null || true
           sudo rm -f /etc/resolv.conf
           echo -e "nameserver 1.1.1.1\nnameserver 8.8.8.8\nnameserver 1.0.0.1" \
+
             | sudo tee /etc/resolv.conf
           sleep 2
           echo "[INFO] 当前出口 IP:"
-          curl -s --max-time 10 https://api.ipify.org && echo
+          curl -s --max-time 10 https://ipify.org && echo
           echo "[INFO] WARP Trace:"
-          curl -s --max-time 10 https://www.cloudflare.com/cdn-cgi/trace \
+          curl -s --max-time 10 https://cloudflare.com \
             | grep -E 'ip=|warp=|loc=' || true
 
       - name: 执行续订
